@@ -16,13 +16,16 @@ warn() { echo -e "${YELLOW}⚠${NC}  $*"; }
 fail() { echo -e "${RED}✗${NC} $*"; }
 
 clone_or_skip() {
+  # Returns 0 if we just cloned (first install), 1 if already present (skip setup).
   local name="$1" url="$2" dest="$3"
-  if [ -d "$dest/.git" ]; then
+  if [ -d "$dest/.git" ] || { [ -L "$dest" ] && [ -d "$dest" ]; }; then
     ok "$name already installed at $dest"
+    return 1
   elif [ -n "$url" ]; then
     echo "Cloning $name from $url..."
     git clone "$url" "$dest"
     ok "Cloned $name"
+    return 0
   else
     warn "$name has no public remote. Skipping clone."
     return 1
@@ -30,7 +33,12 @@ clone_or_skip() {
 }
 
 run_skill_setup() {
-  local name="$1" dir="$2"
+  local name="$1" dir="$2" binary="$3"
+  # Skip if binary is already in PATH — setup already ran on a previous install.
+  if command -v "$binary" >/dev/null 2>&1; then
+    ok "$name already configured ($(command -v "$binary"))"
+    return 0
+  fi
   # Resolve symlinks so the skill's setup.sh computes SKILL_ROOT as the real
   # directory — not the symlink path — avoiding circular ln -sfn self-references.
   local real_dir
@@ -58,14 +66,14 @@ echo ""
 
 # --- devin-delegate ---
 DEVIN_DEST="$HOME/.agents/skills/devin-delegate"
-clone_or_skip "devin-delegate" "https://github.com/chimera-defi/devin-delegate.git" "$DEVIN_DEST" && \
-  run_skill_setup "devin-delegate" "$DEVIN_DEST"
+clone_or_skip "devin-delegate" "https://github.com/chimera-defi/devin-delegate.git" "$DEVIN_DEST" || true
+run_skill_setup "devin-delegate" "$DEVIN_DEST" "devin-delegate"
 link_skill "devin-delegate" "$DEVIN_DEST"
 
 # --- kimi-delegate ---
 KIMI_DEST="$HOME/.agents/skills/kimi-delegate"
-clone_or_skip "kimi-delegate" "https://github.com/chimera-defi/kimi-delegate-skill.git" "$KIMI_DEST" && \
-  run_skill_setup "kimi-delegate" "$KIMI_DEST"
+clone_or_skip "kimi-delegate" "https://github.com/chimera-defi/kimi-delegate-skill.git" "$KIMI_DEST" || true
+run_skill_setup "kimi-delegate" "$KIMI_DEST" "kimi-delegate"
 link_skill "kimi-delegate" "$KIMI_DEST"
 
 # --- grok-delegate ---
@@ -79,7 +87,7 @@ else
   warn "grok-delegate not found locally and has no public remote — skipping."
 fi
 if [ -d "$GROK_DEST" ]; then
-  run_skill_setup "grok-delegate" "$GROK_DEST"
+  run_skill_setup "grok-delegate" "$GROK_DEST" "grok-delegate"
   link_skill "grok-delegate" "$GROK_DEST"
 fi
 
