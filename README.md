@@ -31,6 +31,34 @@ bash setup.sh
 
 Never call delegates directly (`opencode`, `devin`, `pi --provider kimi-coding`). Always use the wrapper binaries — they provide envelope, fallback, and telemetry.
 
+## Superpowers & GStack integration
+
+`setup.sh` wires delegate-skill into your global agent environment automatically:
+
+- **`~/.claude/skills/delegate-skill`** → symlinked so Claude Code loads the skill in every workspace
+- **`~/.claude/CLAUDE.md`** → routing block injected so every session can route to delegates without opening this repo
+- **SKILL.md** → triggers auto-load: say "delegate this task" or "which delegate should I use" and routing is invoked
+
+### With Superpowers
+
+`superpowers:subagent-driven-development` dispatches fresh subagents per task. Those subagents can use delegate skills for bounded work:
+
+- Implementation step needing a browser → `devin-delegate`
+- Review or research step → `kimi-delegate` (cheaper than a full subagent)
+- Implementation step on a large codebase → `grok-delegate`
+
+Delegates keep subagent context small: only the result summary enters the parent context.
+
+### With GStack
+
+GStack includes `/spark` (Codex write-mode) as a built-in. `delegate-skill` extends it:
+
+- `devin-delegate` — real browser, shell, debugging sandbox
+- `kimi-delegate` — cheap parallel research without burning spark's context
+- `grok-delegate` — large-codebase tasks beyond spark's context window
+
+Install both to get the full execution layer.
+
 ## Claude plugin
 
 Install as a Claude Code plugin to make all skills available via slash commands:

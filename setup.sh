@@ -100,6 +100,51 @@ else
 fi
 
 echo ""
+echo "=== Global integration ==="
+
+# Register delegate-skill as a global Claude Code skill so routing is available
+# in every workspace, not just the delegate-skill repo.
+CLAUDE_SKILLS_DIR="$HOME/.claude/skills"
+if [ -d "$CLAUDE_SKILLS_DIR" ]; then
+  ln -sfn "$DELEGATE_SKILL_ROOT" "$CLAUDE_SKILLS_DIR/delegate-skill"
+  ok "Registered ~/.claude/skills/delegate-skill → $DELEGATE_SKILL_ROOT"
+else
+  warn "~/.claude/skills not found — skipping global skill registration"
+fi
+
+# Inject routing block into the global Claude CLAUDE.md so every workspace
+# loads delegate routing without needing to open this repo.
+GLOBAL_CLAUDE_MD="$HOME/.claude/CLAUDE.md"
+if [ -f "$GLOBAL_CLAUDE_MD" ]; then
+  if grep -q "delegate-skill:begin" "$GLOBAL_CLAUDE_MD" 2>/dev/null; then
+    ok "Delegate routing block already in $GLOBAL_CLAUDE_MD"
+  else
+    cat >> "$GLOBAL_CLAUDE_MD" <<'ROUTING_BLOCK'
+
+<!-- delegate-skill:begin -->
+## AI Delegation Routing
+
+Route bounded tasks to the right AI delegate. Never call delegates directly —
+always use the wrapper binaries (envelope, fallback, telemetry).
+
+| Task | Delegate | Quick command |
+|------|----------|---------------|
+| Browser / UI / screenshot / sandbox | `devin-delegate` | `devin-delegate --task "..."` |
+| Cheap research / review / summarize | `kimi-delegate` | `kimi-delegate --task "..."` |
+| Multi-file refactor / large codebase | `grok-delegate` | `grok-delegate --task "..."` |
+| Local Codex write-mode impl | `/spark` | invoke `/spark` skill |
+| Unknown scope | `kimi-delegate` to scope, then escalate | — |
+
+See also: `~/.claude/skills/delegate-skill/SKILL.md` for Superpowers + GStack integration notes.
+<!-- delegate-skill:end -->
+ROUTING_BLOCK
+    ok "Injected delegate routing block into $GLOBAL_CLAUDE_MD"
+  fi
+else
+  warn "$GLOBAL_CLAUDE_MD not found — skipping global routing injection"
+fi
+
+echo ""
 echo "=== Health checks ==="
 
 check_cmd() {
