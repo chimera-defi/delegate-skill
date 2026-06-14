@@ -1,0 +1,13 @@
+{
+  "name": "delegate-skill",
+  "short_description": "Install all four AI delegation skills in one command.",
+  "categories": ["productivity", "delegation", "multi-agent"],
+  "tags": ["devin", "kimi", "grok", "spark", "delegate", "subagent"],
+  "install_command": "bash setup.sh",
+  "requirements": {
+    "devin-delegate": "https://github.com/chimera-defi/devin-delegate",
+    "kimi-delegate": "https://github.com/chimera-defi/kimi-delegate-skill",
+    "grok-delegate": "local (no public remote yet)",
+    "spark": "via gstack"
+  }
+}

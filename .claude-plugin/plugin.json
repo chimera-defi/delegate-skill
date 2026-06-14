@@ -1,0 +1,11 @@
+{
+  "name": "delegate-skill",
+  "description": "Index of AI delegation skills: devin (browser/sandbox), kimi (cheap research), grok (large codebase), spark (local Codex). Install all four with setup.sh.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Chimera",
+    "email": "chimera_defi@protonmail.com"
+  },
+  "homepage": "https://github.com/chimera-defi/delegate-skill",
+  "license": "MIT"
+}
