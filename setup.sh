@@ -31,9 +31,13 @@ clone_or_skip() {
 
 run_skill_setup() {
   local name="$1" dir="$2"
-  if [ -f "$dir/setup.sh" ]; then
+  # Resolve symlinks so the skill's setup.sh computes SKILL_ROOT as the real
+  # directory — not the symlink path — avoiding circular ln -sfn self-references.
+  local real_dir
+  real_dir="$(readlink -f "$dir" 2>/dev/null || echo "$dir")"
+  if [ -f "$real_dir/setup.sh" ]; then
     echo "Running $name/setup.sh..."
-    bash "$dir/setup.sh" && ok "$name setup complete" || warn "$name setup exited with errors"
+    bash "$real_dir/setup.sh" && ok "$name setup complete" || warn "$name setup exited with errors"
   else
     warn "$name has no setup.sh — skipping binary install"
   fi
