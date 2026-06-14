@@ -16,7 +16,7 @@ bash setup.sh
 |-------|---------|--------|
 | `devin-delegate` | Browser, UI, screenshot, sandbox implementation | [chimera-defi/devin-delegate](https://github.com/chimera-defi/devin-delegate) |
 | `kimi-delegate` | Cheap bounded research, summarize, draft, review | [chimera-defi/kimi-delegate-skill](https://github.com/chimera-defi/kimi-delegate-skill) |
-| `grok-delegate` | Multi-file refactor, large-codebase implementation | local (no public remote yet) |
+| `grok-delegate` | Multi-file refactor, large-codebase implementation | [chimera-defi/grok-delegate](https://github.com/chimera-defi/grok-delegate) |
 | `spark` | Local Codex write-mode implementation | via [gstack](https://github.com/chimera-defi/gstack) |
 
 ## Routing

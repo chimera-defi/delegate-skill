@@ -7,7 +7,7 @@
   "requirements": {
     "devin-delegate": "https://github.com/chimera-defi/devin-delegate",
     "kimi-delegate": "https://github.com/chimera-defi/kimi-delegate-skill",
-    "grok-delegate": "local (no public remote yet)",
+    "grok-delegate": "https://github.com/chimera-defi/grok-delegate",
     "spark": "via gstack"
   }
 }

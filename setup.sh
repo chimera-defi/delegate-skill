@@ -84,7 +84,7 @@ if [ -d "$GROK_LOCAL/.git" ]; then
   ln -sfn "$GROK_LOCAL" "$GROK_DEST"
   ok "grok-delegate linked from local workspace"
 else
-  warn "grok-delegate not found locally and has no public remote — skipping."
+  clone_or_skip "grok-delegate" "https://github.com/chimera-defi/grok-delegate.git" "$GROK_DEST" || true
 fi
 if [ -d "$GROK_DEST" ]; then
   run_skill_setup "grok-delegate" "$GROK_DEST" "grok-delegate"

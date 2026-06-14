@@ -65,14 +65,12 @@ delegate-skill/
    - If not installed, clone from the canonical GitHub URL (or local path for grok until it ships):
      - devin-delegate: `https://github.com/chimera-defi/devin-delegate.git`
      - kimi-delegate: `https://github.com/chimera-defi/kimi-delegate-skill.git`
-     - grok-delegate: no public remote yet — clone from `~/workspace/grok-delegate` if it exists, otherwise warn and skip
+     - grok-delegate: `https://github.com/chimera-defi/grok-delegate.git` (published 2026-06-14; local workspace clone takes precedence if present)
    - Run the skill's own `setup.sh` to install binaries and configure hooks
    - Create `skills/<name>` symlink pointing to the installed location
 3. Check if gstack is installed; if so, symlink `skills/spark` to the gstack spark skill
 4. Run `devin-delegate --check`, `kimi-delegate --check`, `grok-delegate --check` and report status
 5. Print a routing summary
-
-> **Note:** grok-delegate has no public GitHub remote as of 2026-06-14. Until it is published, `setup.sh` performs a local clone from `~/workspace/grok-delegate` or skips with a warning. Push grok-delegate to GitHub and update the URL before sharing this index publicly.
 
 ### Routing Files
 
