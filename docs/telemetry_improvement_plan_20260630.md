@@ -161,6 +161,7 @@ mechanism, which I then settled by reading the wrapper's record path directly.
     numbers and any cross-delegate ratio are not trustworthy until the ×3 factor is
     reconciled.** Follow-up (separate work-order, NOT done here per read-only guardrail):
     standardize the estimated_tokens_saved formula across all three wrappers.
+    **IMPLEMENTED 2026-07-01:** ×3 standardization deployed forward-only via a shared `tokens_saved.py` helper (K=3 ratified); each delegate vendors a byte-identical copy; historical events are unchanged; a one-time step in each series at cutover is expected and intended. Reference: `docs/workorder_standardize_tokens_saved_formula_20260701.md`.
 - **R6 — Audit-only on devin-only modules.** grep for wiring; remove only provably-dead
   code. Lowest priority, after a test harness exists.
 
