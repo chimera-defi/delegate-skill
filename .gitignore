@@ -12,3 +12,7 @@ __pycache__/
 *.pyc
 *.pyo
 .venv/
+.pytest_cache/
+
+# Subagent-driven-development scratch ledger (recover from git log if lost)
+.superpowers/
