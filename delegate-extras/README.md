@@ -37,6 +37,40 @@ The extras path is **not** on the core `--task` path. When it is absent:
 - Dashboards and `ci_gate` skip the telemetry section (empty summary) rather
   than crashing when `shared/` is unavailable.
 
+## Canonical `tokens_saved` helper
+
+`shared/tokens_saved.py` is the authoritative reference for computing
+`estimated_tokens_saved` across all delegate wrappers.  See
+`docs/workorder_standardize_tokens_saved_formula_20260701.md` for the full
+work-order.
+
+**Formula (K = 3, ratified 2026-07-01):**
+
+```
+parent_tokens = envelope.metrics.parent_context_tokens  (falls back to delegate_input_tokens when absent/zero)
+estimated_tokens_saved = max(0, parent_tokens * 3 - delegate_output_tokens)
+```
+
+The K=3 multiplier reflects that a parent re-reading and reasoning over its
+context consumes roughly 3× the tokens a delegate needs for the same work.
+
+**Vendored copies — core path independence:**  Every wrapper (`devin-delegate`,
+`kimi-delegate`, `grok-delegate`) maintains a byte-identical copy at
+`scripts/tokens_saved.py`.  The core `--task` path in each wrapper must import
+from its local `scripts/tokens_saved.py` and must NOT depend on the index repo
+being installed.  The canonical home here (`shared/tokens_saved.py`) is the
+documentation/reference source; `scripts/` copies are the runtime source.
+
+**Drift prevention:**  `shared/tests/test_tokens_saved.py` (11 pinned tests) is
+also vendored byte-identical into each wrapper's test suite.  CI in each wrapper
+runs these tests against the local `scripts/` copy; any divergence from the
+canonical formula fails that repo's CI immediately.
+
+**Forward-only policy:**  This standardization changes how *new* telemetry events
+compute `estimated_tokens_saved`; historical `events.jsonl` records are never
+rewritten.  Each delegate's `tokens_saved` series will show a one-time step at
+the cutover date — this is expected and intended, not a data error.
+
 ## Telemetry wiring
 
 - `devin/ci_gate.py` reads cross-repo, USD-costed telemetry via the co-located
