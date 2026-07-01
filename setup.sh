@@ -127,13 +127,18 @@ if [ -f "$GLOBAL_CLAUDE_MD" ]; then
 Route bounded tasks to the right AI delegate. Never call delegates directly —
 always use the wrapper binaries (envelope, fallback, telemetry).
 
+`devin-delegate` = general implement/review workhorse (browser/sandbox is a sub-capability).
+`kimi-delegate` = cheap small read-only. `grok-delegate` = **dormant** (revival gate: ≥5
+successful calls + a documented devin failure on a large repo).
+
 | Task | Delegate | Quick command |
 |------|----------|---------------|
-| Browser / UI / screenshot / sandbox | `devin-delegate` | `devin-delegate --task "..."` |
-| Cheap research / review / summarize | `kimi-delegate` | `kimi-delegate --task "..."` |
-| Multi-file refactor / large codebase | `grok-delegate` | `grok-delegate --task "..."` |
+| General implement / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..."` |
+| Browser / UI / screenshot / sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..."` |
+| Cheap **small read-only** research / review / summarize | `kimi-delegate` | `kimi-delegate --task "..."` |
 | Local Codex write-mode impl | `/spark` | invoke `/spark` skill |
-| Unknown scope | `kimi-delegate` to scope, then escalate | — |
+| Multi-file refactor / very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
+| Unknown scope | `devin-delegate` (workhorse); if cheap+small, `kimi-delegate` | — |
 
 See also: `~/.claude/skills/delegate-skill/SKILL.md` for Superpowers + GStack integration notes.
 <!-- delegate-skill:end -->
@@ -163,11 +168,12 @@ check_cmd "grok-delegate" "grok-delegate"
 echo ""
 echo "=== Routing summary ==="
 cat <<'ROUTING'
-  Browser / UI / screenshot        → devin-delegate
-  Cheap research / review / draft  → kimi-delegate
-  Multi-file refactor / large repo → grok-delegate
-  Local Codex write-mode impl      → /spark (Claude Code skill)
-  Unknown / orchestration          → kimi-delegate to scope, then escalate
+  General implement / review / debug → devin-delegate (workhorse)
+  Browser / UI / screenshot / sandbox → devin-delegate (a devin capability)
+  Cheap small read-only research     → kimi-delegate
+  Local Codex write-mode impl        → /spark (Claude Code skill)
+  Multi-file refactor / large repo   → grok-delegate (DORMANT)
+  Unknown / orchestration            → devin-delegate (workhorse); if cheap+small, kimi-delegate
 ROUTING
 
 echo ""

@@ -21,13 +21,20 @@ bash setup.sh
 
 ## Routing
 
+Canonical routing table (with rules, fallback, auth, and latency notes) lives in
+[`SKILL.md`](SKILL.md). Quick summary:
+
 | Task | Use |
 |------|-----|
-| Browser / UI / screenshot | `devin-delegate` |
-| Search / summarize / review | `kimi-delegate` |
-| Multi-file refactor / large repo | `grok-delegate` |
+| General implement / review / debug (workhorse) | `devin-delegate` |
+| Browser / UI / screenshot / sandbox (a devin capability) | `devin-delegate` |
+| Cheap **small read-only** search / summarize / review | `kimi-delegate` |
 | Local Codex write-mode | `/spark` |
-| Unclear scope | `kimi-delegate` to scope, then escalate |
+| Multi-file refactor / very large repo (DORMANT) | `grok-delegate` |
+| Unclear scope | `devin-delegate` (workhorse); if cheap+small, `kimi-delegate` |
+
+`grok-delegate` is **dormant** — revival gate: ≥5 successful calls + a documented devin
+failure on a large repo.
 
 Never call delegates directly (`opencode`, `devin`, `pi --provider kimi-coding`). Always use the wrapper binaries — they provide envelope, fallback, and telemetry.
 
