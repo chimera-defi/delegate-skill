@@ -47,4 +47,6 @@ grok-delegate --check
 # Run setup if binaries are missing
 bash setup.sh
 ```
+
+> For model and delegate ratings, escalation permissions, and fallback rules see `~/.claude/skills/delegate-skill/SKILL.md` § "Picking the right delegate and model".
 <!-- delegate-skill:end -->
