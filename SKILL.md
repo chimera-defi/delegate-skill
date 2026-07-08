@@ -1,7 +1,7 @@
 ---
 name: delegate-skill
 preamble-tier: 4
-version: 1.0.0
+version: 1.1.0
 description: "Route bounded tasks to the right AI delegate: devin (browser/sandbox), kimi (cheap research/review), grok (large codebase), spark (local Codex write-mode)."
 triggers:
   - which delegate should I use
@@ -45,6 +45,42 @@ capabilities, not a separate delegate. `kimi-delegate` is for cheap, small, read
 auth — not lack of demand). Revival gate: ≥5 successful calls **and** a documented devin
 failure on a large repo. Until then, route large-codebase work to `devin-delegate` and only
 reach for grok when devin demonstrably can't hold the context.
+
+## Picking the right delegate and model
+
+### Ratings
+
+Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Intelligence** = how hard a problem you can hand it unsupervised. **Taste** = output quality, code aesthetics, API design, copy. **Availability** = how reliably it's reachable without auth errors or quota issues.
+
+**External delegates**
+
+| delegate | cost | intelligence | taste | availability | notes |
+|----------|------|--------------|-------|--------------|-------|
+| devin | 4 | 8 | 2 | 6 | Auth-sensitive (exit 126 = re-auth required). Browser/sandbox built in. Raw output needs human review before shipping. |
+| kimi | 9 | 4 | 4 | 7 | Read-only, light auth. Fast for cheap parallel research. |
+| grok | 5 | 7 | 5 | 0 | **Dormant** — revival gate not met. Do not route here. |
+| spark/codex | 8 | 6 | 5 | 9 | Local, always-on. Ground-floor fallback for implementation. |
+
+**Claude models** (for `model:` parameter in Agent tool / Workflow calls)
+
+| model | cost | intelligence | taste |
+|-------|------|--------------|-------|
+| claude-haiku-4-5 | 9 | 4 | 4 |
+| claude-sonnet-4-6 | 6 | 7 | 7 |
+| claude-opus-4-7 | 3 | 9 | 8 |
+
+### How to apply
+
+- **Defaults, not ceilings.** You have standing permission to escalate: if a cheaper delegate's output doesn't meet the bar, retry or redo with a smarter one without asking. Judge the output, not the price tag. Escalating costs less than shipping mediocre work.
+- **Availability overrides preference.** If the preferred delegate is down (auth error / exit 126), fall back immediately — don't wait for the user. Fallback chain: devin → spark → direct Claude (sonnet). For research: kimi → direct Claude.
+- **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
+- **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): spark/codex — cheap, fast, local, always available.
+- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use claude-sonnet-4-6 or claude-opus-4-7 directly. Never ship raw devin, kimi, or claude-haiku-4-5 output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
+- **Reviews and adversarial critique**: claude-opus-4-7 or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
+- **Research / summarize / small diffs**: kimi first (cheapest) → spark if kimi is unavailable. If research requires live pages, a browser, or screenshots: devin-delegate instead.
+- **Never use claude-haiku-4-5 for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
+- **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field (haiku/sonnet/opus) does not route to external delegates. To use external delegates from inside any workflow or subagent, call their Bash wrappers: `kimi-delegate --task "..."` for cheap read-only subtasks, `devin-delegate --task "..."` for implementation or browser subtasks, `spark` for local Codex write-mode. Always go through the wrappers — never call raw engines directly.
+- **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate`, `kimi-delegate`, `grok-delegate` binaries.
 
 ## Rules
 

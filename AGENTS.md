@@ -5,8 +5,10 @@
 <!-- delegate-skill:begin -->
 ## AI Delegation Routing
 
-> Canonical routing table lives in `SKILL.md`. This block mirrors it for non-Claude
-> agents that do not auto-load the skill. Keep the two in sync when routing changes.
+> Canonical routing table, model/delegate ratings, and fallback rules live in `SKILL.md`.
+> This block mirrors the routing table for non-Claude agents that do not auto-load the skill.
+> Keep the two in sync when routing changes. For ratings and escalation rules see
+> `SKILL.md` § "Picking the right delegate and model".
 
 `devin-delegate` is the general implement/review workhorse (browser/sandbox is one of its
 capabilities). `kimi-delegate` is for cheap, small, read-only tasks. `grok-delegate` is
