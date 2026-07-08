@@ -56,7 +56,7 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 
 | delegate | cost | intelligence | taste | availability | notes |
 |----------|------|--------------|-------|--------------|-------|
-| devin | 4 | 8 | 6 | 6 | Auth-sensitive (exit 126 = re-auth required). Browser/sandbox built in. |
+| devin | 4 | 8 | 2 | 6 | Auth-sensitive (exit 126 = re-auth required). Browser/sandbox built in. Raw output needs human review before shipping. |
 | kimi | 9 | 4 | 4 | 7 | Read-only, light auth. Fast for cheap parallel research. |
 | grok | 5 | 7 | 5 | 0 | **Dormant** — revival gate not met. Do not route here. |
 | spark/codex | 8 | 6 | 5 | 9 | Local, always-on. Ground-floor fallback for implementation. |
@@ -75,11 +75,11 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 - **Availability overrides preference.** If the preferred delegate is down (auth error / exit 126), fall back immediately — don't wait for the user. Fallback chain: devin → spark → direct Claude (sonnet). For research: kimi → direct Claude.
 - **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
 - **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): spark/codex — cheap, fast, local, always available.
-- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use devin or claude-sonnet-4-6 / claude-opus-4-7. Never kimi or claude-haiku-4-5 for shipped output.
+- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use claude-sonnet-4-6 or claude-opus-4-7 directly. Never ship raw devin, kimi, or claude-haiku-4-5 output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
 - **Reviews and adversarial critique**: claude-opus-4-7 or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
-- **Research / summarize / small diffs**: kimi first (cheapest) → spark if kimi is unavailable.
+- **Research / summarize / small diffs**: kimi first (cheapest) → spark if kimi is unavailable. If research requires live pages, a browser, or screenshots: devin-delegate instead.
 - **Never use claude-haiku-4-5 for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
-- **Claude models only in Agent tool calls.** The `model:` parameter does not accept external delegates. For mechanical steps needing a non-Claude model, spawn a thin Sonnet wrapper whose prompt is to write a self-contained codex prompt and run `codex exec` via Bash.
+- **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field (haiku/sonnet/opus) does not route to external delegates. To use external delegates from inside any workflow or subagent, call their Bash wrappers: `kimi-delegate --task "..."` for cheap read-only subtasks, `devin-delegate --task "..."` for implementation or browser subtasks, `spark` for local Codex write-mode. Always go through the wrappers — never call raw engines directly.
 - **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate`, `kimi-delegate`, `grok-delegate` binaries.
 
 ## Rules
