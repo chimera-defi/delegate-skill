@@ -17,7 +17,7 @@ bash setup.sh
 | `devin-delegate` | Browser, UI, screenshot, sandbox implementation | [chimera-defi/devin-delegate](https://github.com/chimera-defi/devin-delegate) |
 | `kimi-delegate` | Optional compatibility for cheap bounded read-only work | [chimera-defi/kimi-delegate-skill](https://github.com/chimera-defi/kimi-delegate-skill) |
 | `grok-delegate` | Multi-file refactor, large-codebase implementation | [chimera-defi/grok-delegate](https://github.com/chimera-defi/grok-delegate) |
-| `spark` | Local Codex write-mode implementation | via [gstack](https://github.com/chimera-defi/gstack) |
+| `spark` / `codex-spark` | Local Codex Spark write-mode implementation | native GStack `/spark` when installed, otherwise the checked-in `codex-spark` adapter |
 
 ## Routing
 
@@ -58,7 +58,16 @@ Delegates keep subagent context small: only the result summary enters the parent
 
 ### With GStack
 
-GStack includes `/spark` (Codex write-mode) as a built-in. `delegate-skill` extends it:
+GStack may include `/spark` (Codex write-mode) as a built-in. When that native skill is
+missing, `setup.sh` installs `codex-spark`, an explicit Codex CLI adapter that preserves
+the same model selection and makes availability observable:
+
+```bash
+codex-spark --check
+codex-spark --task "bounded task" --workspace /path/to/repo
+```
+
+`delegate-skill` extends either Spark entrypoint with:
 
 - `devin-delegate` — real browser, shell, debugging sandbox
 - Kimi — optional compatibility for cheap parallel research when explicitly enabled

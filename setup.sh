@@ -97,8 +97,16 @@ SPARK_PATH="$HOME/.claude/skills/gstack/spark"
 if [ -d "$SPARK_PATH" ]; then
   link_skill "spark" "$SPARK_PATH"
 else
-  warn "spark not found at $SPARK_PATH — install gstack first: https://github.com/chimera-defi/gstack"
+  warn "native spark not found at $SPARK_PATH — installing Codex CLI adapter"
 fi
+
+# Native GStack /spark is preferred when present; this explicit adapter keeps
+# local Spark routing available and testable when the slash skill is absent.
+SPARK_BIN_DIR="${CODEX_SPARK_BIN_DIR:-$HOME/.local/bin}"
+mkdir -p "$SPARK_BIN_DIR"
+chmod +x "$DELEGATE_SKILL_ROOT/scripts/codex-spark"
+ln -sfn "$DELEGATE_SKILL_ROOT/scripts/codex-spark" "$SPARK_BIN_DIR/codex-spark"
+ok "Codex Spark adapter installed at $SPARK_BIN_DIR/codex-spark"
 
 echo ""
 echo "=== Global integration ==="
@@ -180,6 +188,7 @@ check_cmd() {
 
 check_cmd "devin-delegate" "devin-delegate"
 check_cmd "codex" "codex"
+check_cmd "codex-spark adapter" "codex-spark"
 check_cmd "kimi-delegate" "kimi-delegate" # optional compatibility route
 check_cmd "grok-delegate" "grok-delegate"
 

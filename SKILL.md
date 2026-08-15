@@ -80,7 +80,7 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 - **Reviews and adversarial critique**: claude-opus-4-7 or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
 - **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first; if the task needs live pages, a browser, or screenshots, use `devin-delegate`. Kimi is an opt-in compatibility route only.
 - **Never use claude-haiku-4-5 for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
-- **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Always use wrappers or the configured skill entrypoint — never call raw engines directly.
+- **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker or `codex-spark --task "..."` adapter for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Always use wrappers or the configured skill entrypoint — never call raw engines directly.
 - **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate` or the configured Spark/Codex entrypoint; use Kimi only when explicitly enabled.
 
 ## Rules
@@ -131,6 +131,7 @@ Install both GStack and `delegate-skill` to get the full execution layer.
 ```bash
 devin-delegate --check
 codex --version
+codex-spark --check
 # Optional compatibility route:
 kimi-delegate --check
 grok-delegate --check
