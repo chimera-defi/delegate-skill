@@ -51,6 +51,7 @@ for d in devin-delegate kimi-delegate grok-delegate codex; do
   chmod +x "$BIN/$d"
 done
 export PATH="$BIN:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Pre-stub clone destinations as symlinks to a real dir so clone_or_skip() skips
 # `git clone` (its `[ -L ] && [ -d ]` branch returns "already installed").
@@ -79,8 +80,10 @@ check "Spark/Codex route present"               grep -q "Spark/Codex" "$HOME/.cl
 check "Kimi is not the default route"           bash -c '! grep -q "Cheap.*kimi-delegate" "$1"' _ "$HOME/.claude/CLAUDE.md"
 check "devin binary resolved"                   grep -q "devin-delegate binary:" "$SCRATCH/run2.log"
 check "codex binary resolved"                   grep -q "codex binary:" "$SCRATCH/run2.log"
+check "Codex Spark adapter resolved"            grep -q "codex-spark adapter binary:" "$SCRATCH/run2.log"
 check "kimi --check binary resolved"            grep -q "kimi-delegate binary:" "$SCRATCH/run2.log"
 check "grok --check binary resolved"            grep -q "grok-delegate binary:" "$SCRATCH/run2.log"
+check "adapter check reports availability"      env HOME="$HOME" PATH="$BIN:$PATH" "$REPO_ROOT/scripts/codex-spark" --check
 
 echo ""
 echo "passed=$pass failed=$fail"

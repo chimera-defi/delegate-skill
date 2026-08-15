@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Explicit Codex Spark adapter for hosts without the native GStack /spark skill.
+set -euo pipefail
+
+MODEL="${CODEX_SPARK_MODEL:-gpt-5.3-codex-spark}"
+WORKSPACE="${CODEX_SPARK_WORKSPACE:-$PWD}"
+
+usage() { echo 'Usage: codex-spark --check | --task "bounded task" [--workspace PATH]' >&2; }
+
+if [[ "${1:-}" == "--check" ]]; then
+  command -v codex >/dev/null 2>&1 || { echo "codex-spark: unavailable (codex CLI not found)" >&2; exit 1; }
+  echo "codex-spark: adapter available"
+  echo "codex-spark: native_gstack_skill=$([[ -d "${HOME}/.claude/skills/gstack/spark" ]] && echo true || echo false)"
+  echo "codex-spark: model=$MODEL"
+  echo "codex-spark: codex=$(command -v codex)"
+  exit 0
+fi
+
+if [[ "${1:-}" != "--task" || -z "${2:-}" ]]; then usage; exit 2; fi
+TASK="$2"
+shift 2
+while (($#)); do
+  case "$1" in
+    --workspace) [[ -n "${2:-}" ]] || { usage; exit 2; }; WORKSPACE="$2"; shift 2 ;;
+    *) echo "codex-spark: unknown option: $1" >&2; exit 2 ;;
+  esac
+done
+command -v codex >/dev/null 2>&1 || { echo "codex-spark: unavailable (codex CLI not found)" >&2; exit 1; }
+[[ -d "$WORKSPACE" ]] || { echo "codex-spark: workspace not found: $WORKSPACE" >&2; exit 2; }
+exec codex exec --model "$MODEL" --cd "$WORKSPACE" --sandbox workspace-write "$TASK"
