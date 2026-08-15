@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# One-shot installer for all four AI delegation skills.
+# One-shot installer for delegate skills with Spark/Codex-first local routing
+# and Devin-first general/browser/sandbox routing.
 set -euo pipefail
 
 DELEGATE_SKILL_ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -112,14 +113,31 @@ else
   warn "~/.claude/skills not found — skipping global skill registration"
 fi
 
+# Register the same source for Codex/OpenAI-style skill discovery when those
+# skill roots exist. The repository's AGENTS.md mirror remains authoritative
+# for projects that do not auto-load this directory.
+AGENTS_SKILLS_DIR="$HOME/.agents/skills"
+if [ -d "$AGENTS_SKILLS_DIR" ]; then
+  ln -sfn "$DELEGATE_SKILL_ROOT" "$AGENTS_SKILLS_DIR/delegate-skill"
+  ok "Registered ~/.agents/skills/delegate-skill → $DELEGATE_SKILL_ROOT"
+fi
+CODEX_SKILLS_DIR="$HOME/.codex/skills"
+if [ -d "$CODEX_SKILLS_DIR" ]; then
+  ln -sfn "$DELEGATE_SKILL_ROOT" "$CODEX_SKILLS_DIR/delegate-skill"
+  ok "Registered ~/.codex/skills/delegate-skill → $DELEGATE_SKILL_ROOT"
+fi
+
 # Inject routing block into the global Claude CLAUDE.md so every workspace
 # loads delegate routing without needing to open this repo.
 GLOBAL_CLAUDE_MD="$HOME/.claude/CLAUDE.md"
 if [ -f "$GLOBAL_CLAUDE_MD" ]; then
   if grep -q "delegate-skill:begin" "$GLOBAL_CLAUDE_MD" 2>/dev/null; then
-    ok "Delegate routing block already in $GLOBAL_CLAUDE_MD"
-  else
-    cat >> "$GLOBAL_CLAUDE_MD" <<'ROUTING_BLOCK'
+    # Replace the marked block so upgrades propagate routing changes instead
+    # of preserving stale generated instructions.
+    sed -i '/<!-- delegate-skill:begin -->/,/<!-- delegate-skill:end -->/d' "$GLOBAL_CLAUDE_MD"
+    ok "Replaced delegate routing block in $GLOBAL_CLAUDE_MD"
+  fi
+  cat >> "$GLOBAL_CLAUDE_MD" <<'ROUTING_BLOCK'
 
 <!-- delegate-skill:begin -->
 ## AI Delegation Routing
@@ -127,24 +145,23 @@ if [ -f "$GLOBAL_CLAUDE_MD" ]; then
 Route bounded tasks to the right AI delegate. Never call delegates directly —
 always use the wrapper binaries (envelope, fallback, telemetry).
 
-`devin-delegate` = general implement/review workhorse (browser/sandbox is a sub-capability).
-`kimi-delegate` = cheap small read-only. `grok-delegate` = **dormant** (revival gate: ≥5
+Spark/Codex = local mechanical implementation; `devin-delegate` = general implement/review
+workhorse (browser/sandbox is a sub-capability). Kimi = optional compatibility. `grok-delegate` = **dormant** (revival gate: ≥5
 successful calls + a documented devin failure on a large repo).
 
 | Task | Delegate | Quick command |
 |------|----------|---------------|
 | General implement / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..."` |
 | Browser / UI / screenshot / sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..."` |
-| Cheap **small read-only** research / review / summarize | `kimi-delegate` | `kimi-delegate --task "..."` |
-| Local Codex write-mode impl | `/spark` | invoke `/spark` skill |
+| Local mechanical implementation / transformation / migration | Spark/Codex | invoke `/spark` or configured Codex Spark |
+| Cheap **small read-only** research / review / summarize | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Multi-file refactor / very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
-| Unknown scope | `devin-delegate` (workhorse); if cheap+small, `kimi-delegate` | — |
+| Unknown scope | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
 
 See also: `~/.claude/skills/delegate-skill/SKILL.md` for Superpowers + GStack integration notes.
 <!-- delegate-skill:end -->
 ROUTING_BLOCK
-    ok "Injected delegate routing block into $GLOBAL_CLAUDE_MD"
-  fi
+  ok "Installed delegate routing block into $GLOBAL_CLAUDE_MD"
 else
   warn "$GLOBAL_CLAUDE_MD not found — skipping global routing injection"
 fi
@@ -162,18 +179,19 @@ check_cmd() {
 }
 
 check_cmd "devin-delegate" "devin-delegate"
-check_cmd "kimi-delegate" "kimi-delegate"
+check_cmd "codex" "codex"
+check_cmd "kimi-delegate" "kimi-delegate" # optional compatibility route
 check_cmd "grok-delegate" "grok-delegate"
 
 echo ""
 echo "=== Routing summary ==="
 cat <<'ROUTING'
-  General implement / review / debug → devin-delegate (workhorse)
+  Local mechanical implementation             → Spark/Codex
+  General implement / review / debug          → devin-delegate (workhorse)
   Browser / UI / screenshot / sandbox → devin-delegate (a devin capability)
-  Cheap small read-only research     → kimi-delegate
-  Local Codex write-mode impl        → /spark (Claude Code skill)
+  Cheap small read-only research     → Spark/Codex bounded subagent
   Multi-file refactor / large repo   → grok-delegate (DORMANT)
-  Unknown / orchestration            → devin-delegate (workhorse); if cheap+small, kimi-delegate
+  Unknown / orchestration             → devin-delegate (workhorse)
 ROUTING
 
 echo ""

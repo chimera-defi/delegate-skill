@@ -2,7 +2,7 @@
 name: delegate-skill
 preamble-tier: 4
 version: 1.1.0
-description: "Route bounded tasks to the right AI delegate: devin (browser/sandbox), kimi (cheap research/review), grok (large codebase), spark (local Codex write-mode)."
+description: "Route bounded tasks to Spark/Codex for local mechanical work and Devin for general implementation, review, browser, and sandbox work, with safe fallbacks."
 triggers:
   - which delegate should I use
   - delegate this task
@@ -28,18 +28,19 @@ directly — always use the wrapper binaries (envelope, fallback, telemetry).
 
 ## Routing table
 
-`devin-delegate` is the general implement/review workhorse; browser/sandbox is one of its
-capabilities, not a separate delegate. `kimi-delegate` is for cheap, small, read-only tasks.
+Spark/Codex is preferred for local mechanical implementation; `devin-delegate` is the
+general implement/review workhorse, with browser/sandbox as one of its capabilities.
+Kimi is optional compatibility for cheap read-only work and is never the default route.
 `grok-delegate` is **dormant** (see below).
 
 | Task type | Delegate | Command |
 |-----------|----------|---------|
 | General implementation / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..." --workspace /path` |
 | Browser, UI, screenshot, sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..." --workspace /path` |
-| Cheap **small read-only**: search / summarize / draft / review small diffs | `kimi-delegate` | `kimi-delegate --task "..."` |
-| Local Codex write-mode implementation | `spark` | `/spark` |
+| Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `/spark` or the configured Codex Spark worker |
+| Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Multi-file refactor on a very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
-| Unknown scope / orchestration | `devin-delegate` (workhorse); if clearly cheap+small, `kimi-delegate` | `devin-delegate --task "scope: ..."` |
+| Unknown scope / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
 
 **grok is dormant, not deprecated.** It has one lifetime call (an auth error, i.e. broken
 auth — not lack of demand). Revival gate: ≥5 successful calls **and** a documented devin
@@ -72,15 +73,15 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 ### How to apply
 
 - **Defaults, not ceilings.** You have standing permission to escalate: if a cheaper delegate's output doesn't meet the bar, retry or redo with a smarter one without asking. Judge the output, not the price tag. Escalating costs less than shipping mediocre work.
-- **Availability overrides preference.** If the preferred delegate is down (auth error / exit 126), fall back immediately — don't wait for the user. Fallback chain: devin → spark → direct Claude (sonnet). For research: kimi → direct Claude.
+- **Availability overrides preference.** If a preferred route is unavailable, fall back immediately — don't wait for the user. Mechanical fallback: spark → devin → direct parent. General/browser/review fallback: devin → spark → direct parent. Read-only fallback: spark/Codex → direct parent; use Kimi only when explicitly enabled and healthy.
 - **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
 - **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): spark/codex — cheap, fast, local, always available.
 - **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use claude-sonnet-4-6 or claude-opus-4-7 directly. Never ship raw devin, kimi, or claude-haiku-4-5 output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
 - **Reviews and adversarial critique**: claude-opus-4-7 or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
-- **Research / summarize / small diffs**: kimi first (cheapest) → spark if kimi is unavailable. If research requires live pages, a browser, or screenshots: devin-delegate instead.
+- **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first; if the task needs live pages, a browser, or screenshots, use `devin-delegate`. Kimi is an opt-in compatibility route only.
 - **Never use claude-haiku-4-5 for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
-- **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field (haiku/sonnet/opus) does not route to external delegates. To use external delegates from inside any workflow or subagent, call their Bash wrappers: `kimi-delegate --task "..."` for cheap read-only subtasks, `devin-delegate --task "..."` for implementation or browser subtasks, `spark` for local Codex write-mode. Always go through the wrappers — never call raw engines directly.
-- **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate`, `kimi-delegate`, `grok-delegate` binaries.
+- **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Always use wrappers or the configured skill entrypoint — never call raw engines directly.
+- **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate` or the configured Spark/Codex entrypoint; use Kimi only when explicitly enabled.
 
 ## Rules
 
@@ -109,7 +110,7 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 subagents can and should use delegate skills for bounded work within larger tasks:
 
 - Implementation step that needs a browser → `devin-delegate`
-- Review or research step → `kimi-delegate` (cheaper than a full subagent)
+- Review or research step → Spark/Codex bounded subagent; use Devin when browser/sandbox access is required
 - Implementation step on a large codebase → `grok-delegate`
 
 Delegates keep subagent context small: only the result summary enters the parent context,
@@ -120,7 +121,7 @@ not the full implementation.
 GStack includes `/spark` (Codex write-mode) as a built-in. `delegate-skill` adds:
 
 - `devin-delegate` — when spark needs a real browser, shell, or debugging sandbox
-- `kimi-delegate` — when you want cheap parallel research without burning spark's context
+- Kimi remains an optional compatibility route for cheap read-only research when explicitly enabled
 - `grok-delegate` — when the codebase is too large for spark's context window
 
 Install both GStack and `delegate-skill` to get the full execution layer.
@@ -129,6 +130,8 @@ Install both GStack and `delegate-skill` to get the full execution layer.
 
 ```bash
 devin-delegate --check
+codex --version
+# Optional compatibility route:
 kimi-delegate --check
 grok-delegate --check
 ```
