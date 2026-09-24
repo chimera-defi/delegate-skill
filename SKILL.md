@@ -62,13 +62,18 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 | grok | 5 | 7 | 5 | 0 | **Dormant** — revival gate not met. Do not route here. |
 | spark/codex | 8 | 6 | 5 | 9 | Local, always-on. Ground-floor fallback for implementation. |
 
-**Claude models** (for `model:` parameter in Agent tool / Workflow calls)
+**Claude models** (for the `model:` parameter in Agent tool / Workflow calls — it takes the
+bare aliases below, not full ids; each alias tracks the latest release for its tier)
 
-| model | cost | intelligence | taste |
-|-------|------|--------------|-------|
-| claude-haiku-4-5 | 9 | 4 | 4 |
-| claude-sonnet-4-6 | 6 | 7 | 7 |
-| claude-opus-4-7 | 3 | 9 | 8 |
+| `model:` | resolves to (2026-09-24) | cost | intelligence | taste | `advisor` tool |
+|----------|--------------------------|------|--------------|-------|----------------|
+| `haiku` | claude-haiku-4-5 | 9 | 4 | 4 | — |
+| `sonnet` | claude-sonnet-5 | 6 | 7 | 7 | yes |
+| `opus` | claude-opus-5-5 | 3 | 9 | 8 | **no** |
+
+`advisor` is gated on the agent's own model: a subagent that runs on Opus 5.x has no
+`advisor` tool, silently. For implementation subagents that should be able to ask for a
+second opinion, use `sonnet` (or `subagent_type: builder`, which is pinned to it).
 
 ### How to apply
 
@@ -76,10 +81,10 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 - **Availability overrides preference.** If a preferred route is unavailable, fall back immediately — don't wait for the user. Mechanical fallback: spark → devin → direct parent. General/browser/review fallback: devin → spark → direct parent. Read-only fallback: spark/Codex → direct parent; use Kimi only when explicitly enabled and healthy.
 - **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
 - **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): spark/codex — cheap, fast, local, always available.
-- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use claude-sonnet-4-6 or claude-opus-4-7 directly. Never ship raw devin, kimi, or claude-haiku-4-5 output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
-- **Reviews and adversarial critique**: claude-opus-4-7 or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
+- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use `sonnet` or `opus` directly. Never ship raw devin, kimi, or `haiku` output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
+- **Reviews and adversarial critique**: `opus` or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
 - **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first; if the task needs live pages, a browser, or screenshots, use `devin-delegate`. Kimi is an opt-in compatibility route only.
-- **Never use claude-haiku-4-5 for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
+- **Never use `haiku` for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
 - **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker or `codex-spark --task "..."` adapter for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Always use wrappers or the configured skill entrypoint — never call raw engines directly.
 - **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate` or the configured Spark/Codex entrypoint; use Kimi only when explicitly enabled.
 
