@@ -2,7 +2,7 @@
 name: delegate-skill
 preamble-tier: 4
 version: 1.1.0
-description: "Route bounded tasks to Spark/Codex for local mechanical work and Devin for general implementation, review, browser, and sandbox work, with safe fallbacks."
+description: "Route bounded tasks to Spark/Codex for local mechanical work (builds on gpt-6.1-sol high, Haiku low repairs a failed check) and Devin for general implementation, review, browser, and sandbox work, with safe fallbacks."
 triggers:
   - which delegate should I use
   - delegate this task
@@ -14,6 +14,9 @@ triggers:
   - use a delegate
   - delegate to an agent
   - what delegate
+  - codex fanout
+  - fan out to codex
+  - send the builds to codex
 allowed-tools:
   - Bash
   - Read
