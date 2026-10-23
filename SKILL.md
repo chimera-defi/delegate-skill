@@ -65,26 +65,27 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 **Claude models** (for the `model:` parameter in Agent tool / Workflow calls — it takes the
 bare aliases below, not full ids; each alias tracks the latest release for its tier)
 
-| `model:` | resolves to (2026-09-24) | cost | intelligence | taste | `advisor` tool |
+| `model:` | resolves to (2026-10-23) | cost | intelligence | taste | `advisor` tool |
 |----------|--------------------------|------|--------------|-------|----------------|
-| `haiku` | claude-haiku-4-5 | 9 | 4 | 4 | — |
-| `sonnet` | claude-sonnet-5 | 6 | 7 | 7 | yes |
-| `opus` | claude-opus-5-5 | 3 | 9 | 8 | **no** |
+| `haiku` | claude-haiku-5-5 | 9 | 6 | 4 | — |
+| `sonnet` | claude-sonnet-5-5 | 6 | 7 | 7 | yes |
+| `opus` | claude-opus-5-5 | 3 | 9 | 8 | yes (CLI ≥ 2.1.300) |
 
-`advisor` is gated on the agent's own model: a subagent that runs on Opus 5.x has no
-`advisor` tool, silently. For implementation subagents that should be able to ask for a
-second opinion, use `sonnet` (or `subagent_type: builder`, which is pinned to it).
+`advisor` is gated on the agent's own model and the CLI: before CLI 2.1.300 a subagent on
+Opus 5.x had no `advisor` tool, silently. For implementation subagents that should be able
+to ask for a second opinion, `sonnet` (or `subagent_type: builder`, pinned to it) works on
+any recent CLI.
 
 ### How to apply
 
 - **Defaults, not ceilings.** You have standing permission to escalate: if a cheaper delegate's output doesn't meet the bar, retry or redo with a smarter one without asking. Judge the output, not the price tag. Escalating costs less than shipping mediocre work.
 - **Availability overrides preference.** If a preferred route is unavailable, fall back immediately — don't wait for the user. Mechanical fallback: spark → devin → direct parent. General/browser/review fallback: devin → spark → direct parent. Read-only fallback: spark/Codex → direct parent; use Kimi only when explicitly enabled and healthy.
 - **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
-- **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): spark/codex — cheap, fast, local, always available.
+- **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): Codex `gpt-6-luna` at high effort first (low and medium effort barely reason and miss far more). If the task's own check or the statement's examples fail, Haiku low repairs it (`claude -p --model haiku --effort low --tools ""` with the statement, the code and the failing examples); after a failed repair, escalate to `gpt-6.1-sol` medium. When a miss is costly, have Haiku review every answer, or let `haiku` at medium effort write it alone.
 - **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use `sonnet` or `opus` directly. Never ship raw devin, kimi, or `haiku` output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
 - **Reviews and adversarial critique**: `opus` or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
 - **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first; if the task needs live pages, a browser, or screenshots, use `devin-delegate`. Kimi is an opt-in compatibility route only.
-- **Never use `haiku` for anything that ships.** Reserve it for pure triage/classification steps inside larger workflows.
+- **`haiku` can ship clear-spec code, not taste work.** In a 2026-10-22 routing benchmark (tools-off Python function problems), Haiku 5.5 at medium effort passed 59/60 and every attempt on the hardest set, and Haiku low repairing Codex output that failed its check was the cheapest repair measured. That is function-level evidence only: use it for implementation and repairs with a check behind them, never for UI, copy or API design (taste), and not unreviewed on repo-scale changes.
 - **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker or `codex-spark --task "..."` adapter for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Always use wrappers or the configured skill entrypoint — never call raw engines directly.
 - **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate` or the configured Spark/Codex entrypoint; use Kimi only when explicitly enabled.
 
