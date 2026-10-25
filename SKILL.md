@@ -9,7 +9,6 @@ triggers:
   - use a subagent for this
   - route to an AI agent
   - should I use devin
-  - should I use kimi
   - should I use grok
   - use a delegate
   - delegate to an agent
@@ -33,7 +32,7 @@ directly — always use the wrapper binaries (envelope, fallback, telemetry).
 
 Spark/Codex is preferred for local mechanical implementation; `devin-delegate` is the
 general implement/review workhorse, with browser/sandbox as one of its capabilities.
-Kimi is optional compatibility for cheap read-only work and is never the default route.
+Kimi retired 2026-10-25; no route goes to it.
 `grok-delegate` is **dormant** (see below).
 
 | Task type | Delegate | Command |
@@ -61,7 +60,6 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 | delegate | cost | intelligence | taste | availability | notes |
 |----------|------|--------------|-------|--------------|-------|
 | devin | 4 | 8 | 2 | 6 | Auth-sensitive (exit 126 = re-auth required). Browser/sandbox built in. Raw output needs human review before shipping. |
-| kimi | 9 | 4 | 4 | 7 | Read-only, light auth. Fast for cheap parallel research. |
 | grok | 5 | 7 | 5 | 0 | **Dormant** — revival gate not met. Do not route here. |
 | spark/codex | 8 | 6 | 5 | 9 | Local, always-on. Ground-floor fallback for implementation. |
 
@@ -82,19 +80,19 @@ any recent CLI.
 ### How to apply
 
 - **Defaults, not ceilings.** You have standing permission to escalate: if a cheaper delegate's output doesn't meet the bar, retry or redo with a smarter one without asking. Judge the output, not the price tag. Escalating costs less than shipping mediocre work.
-- **Availability overrides preference.** If a preferred route is unavailable, fall back immediately — don't wait for the user. Mechanical fallback: spark → devin → direct parent. General/browser/review fallback: devin → spark → direct parent. Read-only fallback: spark/Codex → direct parent; use Kimi only when explicitly enabled and healthy.
+- **Availability overrides preference.** If a preferred route is unavailable, fall back immediately — don't wait for the user. Mechanical fallback: spark → devin → direct parent. General/browser/review fallback: devin → spark → direct parent. Read-only fallback: spark/Codex → direct parent.
 - **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
 - **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): Codex `gpt-6.1-terra` at low effort in fast mode first (operator 2026-11-02, dispatchbench f77c040: equal pass rate to sol61-high, ~3x cheaper, 2.5-3x faster; escalate to `gpt-6.1-sol` high for uncovered work such as L7 hard problems) (`-c service_tier=priority`, the default for fan-outs: 37% faster, same pass rate and code; it and `gpt-6-astra` medium were the only Codex configs that never failed in the 2026-10-23 routing bench; sol61 high costs about a quarter of astra at list price but is slower). Run the task's own check or the statement's examples; only if they fail, Haiku low repairs it (`claude -p --model haiku --effort low --tools ""` with the statement, the code and the failing examples); after a failed repair, escalate to `gpt-6-astra` medium (also the pick when latency matters). Don't build with `gpt-6-luna` at any effort or sol61 medium. When Codex is quota-out (exact error text), `haiku` low builds with the same check, and `haiku` high takes a failed check or a costly miss (2026-10-24 bench: the cheapest config that never failed, 60/60 + 15/15 on the hardest rung, about a quarter of sonnet medium's $ per pass; slower tail).
-- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use `sonnet` or `opus` directly. Never ship raw devin, kimi, or `haiku` output — their taste scores (2, 4, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
+- **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use `sonnet` or `opus` directly. Never ship raw devin or `haiku` output — their taste scores (2, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
 - **Reviews and adversarial critique**: `opus` or `/gstack-claude challenge`. Optionally add spark/codex as an independent second opinion.
-- **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first (gpt-6.1-sol low via the host relay or `codex exec`; medium for large or ambiguous; Claude `builder` only when Codex is out); if the task needs live pages, a browser, or screenshots, use `devin-delegate`. Kimi is an opt-in compatibility route only.
+- **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first (gpt-6.1-sol low via the host relay or `codex exec`; medium for large or ambiguous; Claude `builder` only when Codex is out); if the task needs live pages, a browser, or screenshots, use `devin-delegate`.
 - **`haiku` can ship clear-spec code, not taste work.** In a 2026-10-22 routing benchmark (tools-off Python function problems), Haiku 5.5 at medium effort passed 59/60 and every attempt on the hardest set, and Haiku low repairing Codex output that failed its check was the cheapest repair measured. That is function-level evidence only: use it for implementation and repairs with a check behind them, never for UI, copy or API design (taste), and not unreviewed on repo-scale changes.
 - **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker or `codex-spark --task "..."` adapter for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Always use wrappers or the configured skill entrypoint — never call raw engines directly.
-- **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate` or the configured Spark/Codex entrypoint; use Kimi only when explicitly enabled.
+- **Never bypass wrappers.** Raw calls skip envelope, fallback, and telemetry — always use `devin-delegate` or the configured Spark/Codex entrypoint.
 
 ## Rules
 
-- **Never bypass wrappers.** Raw calls (`opencode`, `devin`, `pi --provider kimi-coding`) skip
+- **Never bypass wrappers.** Raw calls (`opencode`, `devin`) skip
   envelope injection, fallback, and telemetry. Always use the binary wrappers.
 - **Always scope the task.** Include: goal, constraints, acceptance checks, expected output format.
 - **Auth errors → exit 126.** Do not auto-retry. Print resume steps for the user (below).
@@ -107,7 +105,7 @@ any recent CLI.
   null`; a real model name is only passed through when explicitly configured.
 - **Auth failure → exit 126, no auto-retry.** The wrapper short-circuits *before* the fallback
   engine and prints resume steps. Typical fixes: `opencode` (grok, xAI SIWE) → run
-  `opencode` then `/connect`; kimi/devin provider auth → re-run the provider login. Re-run the
+  `opencode` then `/connect`; devin provider auth → re-run the provider login. Re-run the
   task after connecting.
 - **Latency is long by design.** Delegate calls can run for minutes (observed tail past 500s on
   large repos). This is expected — the wrapper emits progress to stderr. Don't kill a call that
@@ -130,7 +128,6 @@ not the full implementation.
 Current GStack no longer ships `/spark`; local Codex work goes through the canonical `codex exec` line above (or `codex-spark`). `delegate-skill` adds:
 
 - `devin-delegate` — when spark needs a real browser, shell, or debugging sandbox
-- Kimi remains an optional compatibility route for cheap read-only research when explicitly enabled
 - `grok-delegate` — when the codebase is too large for spark's context window
 
 Install both GStack and `delegate-skill` to get the full execution layer.
@@ -141,8 +138,6 @@ Install both GStack and `delegate-skill` to get the full execution layer.
 devin-delegate --check
 codex --version
 codex-spark --check
-# Optional compatibility route:
-kimi-delegate --check
 grok-delegate --check
 ```
 
