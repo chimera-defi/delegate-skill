@@ -11,8 +11,7 @@
 > `SKILL.md` § "Picking the right delegate and model".
 
 Spark/Codex is preferred for local mechanical implementation. `devin-delegate` is the
-general implement/review workhorse (browser/sandbox is one of its capabilities). Kimi is
-optional compatibility for cheap, small, read-only tasks. `grok-delegate` is
+general implement/review workhorse (browser/sandbox is one of its capabilities). Kimi is retired (2026-10-25). `grok-delegate` is
 **dormant** — revival gate: ≥5 successful calls + a documented devin failure on a large repo.
 
 | Task type | Delegate | Command |
@@ -26,7 +25,7 @@ optional compatibility for cheap, small, read-only tasks. `grok-delegate` is
 
 ### Rules
 
-- **Never call delegates directly** (`opencode`, `pi --provider kimi-coding`, `devin`) — always use the wrapper scripts. Wrappers inject the envelope, fallback chain, and telemetry.
+- **Never call delegates directly** (`opencode`, `devin`) — always use the wrapper scripts. Wrappers inject the envelope, fallback chain, and telemetry.
 - **Always include scope** in the task prompt: goal, constraints, acceptance checks, expected output format.
 - **Auth errors exit 126** — do not auto-retry. Print resume steps for the user.
 
@@ -35,7 +34,6 @@ optional compatibility for cheap, small, read-only tasks. `grok-delegate` is
 ```bash
 # Check all delegates are healthy
 devin-delegate --check
-kimi-delegate --check
 grok-delegate --check
 
 # Run setup if binaries are missing

@@ -15,7 +15,6 @@ bash setup.sh
 | Skill | Purpose | Source |
 |-------|---------|--------|
 | `devin-delegate` | Browser, UI, screenshot, sandbox implementation | [chimera-defi/devin-delegate](https://github.com/chimera-defi/devin-delegate) |
-| `kimi-delegate` | Optional compatibility for cheap bounded read-only work | [chimera-defi/kimi-delegate-skill](https://github.com/chimera-defi/kimi-delegate-skill) |
 | `grok-delegate` | Multi-file refactor, large-codebase implementation | [chimera-defi/grok-delegate](https://github.com/chimera-defi/grok-delegate) |
 | `spark` / `codex-spark` | Local Codex Spark write-mode implementation | native GStack `/spark` when installed, otherwise the checked-in `codex-spark` adapter |
 
@@ -36,7 +35,7 @@ Canonical routing table (with rules, fallback, auth, and latency notes) lives in
 `grok-delegate` is **dormant** — revival gate: ≥5 successful calls + a documented devin
 failure on a large repo.
 
-Never call delegates directly (`opencode`, `devin`, `pi --provider kimi-coding`). Always use the wrapper binaries — they provide envelope, fallback, and telemetry.
+Never call delegates directly (`opencode`, `devin`). Always use the wrapper binaries — they provide envelope, fallback, and telemetry.
 
 ## Superpowers & GStack integration
 
@@ -70,7 +69,6 @@ codex-spark --task "bounded task" --workspace /path/to/repo
 `delegate-skill` extends either Spark entrypoint with:
 
 - `devin-delegate` — real browser, shell, debugging sandbox
-- Kimi — optional compatibility for cheap parallel research when explicitly enabled
 - `grok-delegate` — large-codebase tasks beyond spark's context window
 
 Install both to get the full execution layer.

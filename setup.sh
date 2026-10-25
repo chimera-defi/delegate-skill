@@ -71,12 +71,6 @@ clone_or_skip "devin-delegate" "https://github.com/chimera-defi/devin-delegate.g
 run_skill_setup "devin-delegate" "$DEVIN_DEST" "devin-delegate"
 link_skill "devin-delegate" "$DEVIN_DEST"
 
-# --- kimi-delegate ---
-KIMI_DEST="$HOME/.agents/skills/kimi-delegate"
-clone_or_skip "kimi-delegate" "https://github.com/chimera-defi/kimi-delegate-skill.git" "$KIMI_DEST" || true
-run_skill_setup "kimi-delegate" "$KIMI_DEST" "kimi-delegate"
-link_skill "kimi-delegate" "$KIMI_DEST"
-
 # --- grok-delegate ---
 GROK_DEST="$HOME/.agents/skills/grok-delegate"
 GROK_LOCAL="${WORKSPACE:-$HOME/workspace}/grok-delegate"
@@ -154,7 +148,7 @@ Route bounded tasks to the right AI delegate. Never call delegates directly —
 always use the wrapper binaries (envelope, fallback, telemetry).
 
 Spark/Codex = local mechanical implementation; `devin-delegate` = general implement/review
-workhorse (browser/sandbox is a sub-capability). Kimi = optional compatibility. `grok-delegate` = **dormant** (revival gate: ≥5
+workhorse (browser/sandbox is a sub-capability). Kimi retired 2026-10-25. `grok-delegate` = **dormant** (revival gate: ≥5
 successful calls + a documented devin failure on a large repo).
 
 | Task | Delegate | Quick command |
@@ -189,7 +183,6 @@ check_cmd() {
 check_cmd "devin-delegate" "devin-delegate"
 check_cmd "codex" "codex"
 check_cmd "codex-spark adapter" "codex-spark"
-check_cmd "kimi-delegate" "kimi-delegate" # optional compatibility route
 check_cmd "grok-delegate" "grok-delegate"
 
 echo ""
