@@ -94,7 +94,7 @@ fi
 
 # --- spark (via gstack) ---
 SPARK_PATH="$HOME/.claude/skills/gstack/spark"
-if [ -d "$SPARK_PATH" ]; then
+if [ -f "$SPARK_PATH/SKILL.md" ]; then
   link_skill "spark" "$SPARK_PATH"
 else
   warn "native spark not found at $SPARK_PATH — installing Codex CLI adapter"

@@ -40,7 +40,7 @@ Kimi is optional compatibility for cheap read-only work and is never the default
 |-----------|----------|---------|
 | General implementation / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..." --workspace /path` |
 | Browser, UI, screenshot, sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..." --workspace /path` |
-| Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `/spark` or the configured Codex Spark worker |
+| Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Multi-file refactor on a very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
 | Unknown scope / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
@@ -103,7 +103,7 @@ any recent CLI.
 
 - **Fallback = codex/spark.** When a delegate's primary engine fails or returns an invalid
   schema, the wrapper falls back to `codex exec` with **no `--model`** pinned, so codex uses
-  the user's Codex config default (same engine `/spark` uses). Configs set `fallback_model:
+  the user's Codex config default. Configs set `fallback_model:
   null`; a real model name is only passed through when explicitly configured.
 - **Auth failure → exit 126, no auto-retry.** The wrapper short-circuits *before* the fallback
   engine and prints resume steps. Typical fixes: `opencode` (grok, xAI SIWE) → run
@@ -127,7 +127,7 @@ not the full implementation.
 
 ## With GStack
 
-GStack includes `/spark` (Codex write-mode) as a built-in. `delegate-skill` adds:
+Current GStack no longer ships `/spark`; local Codex work goes through the canonical `codex exec` line above (or `codex-spark`). `delegate-skill` adds:
 
 - `devin-delegate` — when spark needs a real browser, shell, or debugging sandbox
 - Kimi remains an optional compatibility route for cheap read-only research when explicitly enabled

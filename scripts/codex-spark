@@ -2,7 +2,8 @@
 # Explicit Codex Spark adapter for hosts without the native GStack /spark skill.
 set -euo pipefail
 
-MODEL="${CODEX_SPARK_MODEL:-gpt-5.3-codex-spark}"
+MODEL="${CODEX_SPARK_MODEL:-gpt-6.1-sol}"
+EFFORT="${CODEX_SPARK_EFFORT:-high}"
 WORKSPACE="${CODEX_SPARK_WORKSPACE:-$PWD}"
 
 usage() { echo 'Usage: codex-spark --check | --task "bounded task" [--workspace PATH]' >&2; }
@@ -11,7 +12,7 @@ if [[ "${1:-}" == "--check" ]]; then
   command -v codex >/dev/null 2>&1 || { echo "codex-spark: unavailable (codex CLI not found)" >&2; exit 1; }
   echo "codex-spark: adapter available"
   echo "codex-spark: native_gstack_skill=$([[ -d "${HOME}/.claude/skills/gstack/spark" ]] && echo true || echo false)"
-  echo "codex-spark: model=$MODEL"
+  echo "codex-spark: model=$MODEL effort=$EFFORT"
   echo "codex-spark: codex=$(command -v codex)"
   exit 0
 fi
@@ -27,4 +28,4 @@ while (($#)); do
 done
 command -v codex >/dev/null 2>&1 || { echo "codex-spark: unavailable (codex CLI not found)" >&2; exit 1; }
 [[ -d "$WORKSPACE" ]] || { echo "codex-spark: workspace not found: $WORKSPACE" >&2; exit 2; }
-exec codex exec --model "$MODEL" --cd "$WORKSPACE" --sandbox workspace-write "$TASK"
+exec codex exec --model "$MODEL" -c model_reasoning_effort="$EFFORT" -c service_tier=priority --cd "$WORKSPACE" --sandbox workspace-write "$TASK" </dev/null
