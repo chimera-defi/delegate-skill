@@ -19,7 +19,7 @@ optional compatibility for cheap, small, read-only tasks. `grok-delegate` is
 |-----------|----------|---------|
 | General implementation / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..." --workspace /path/to/repo` |
 | Browser, UI, screenshot, sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..." --workspace /path/to/repo` |
-| Local mechanical implementation / transformation / migration | `spark` / Codex Spark | invoke via Codex Spark |
+| Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Multi-file refactor on a very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
 | Unknown / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
