@@ -11,8 +11,13 @@
 > `SKILL.md` § "Picking the right delegate and model".
 
 Spark/Codex is preferred for local mechanical implementation. `devin-delegate` is the
-general implement/review workhorse (browser/sandbox is one of its capabilities). Kimi is retired (2026-10-25). `grok-delegate` is
-**dormant** — revival gate: ≥5 successful calls + a documented devin failure on a large repo.
+general implement/review workhorse (browser/sandbox is one of its capabilities). Kimi is retired (2026-10-25).
+
+As of **2026-10-27**, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI are uninstalled from this host. Use the official xAI Grok CLI directly: `grok` **v1.0.70**. Grok is active for second-opinion / research review from a different model family and large-codebase implementation when asked.
+
+Headless one-shot: `grok -p "<scoped prompt>" --cwd <dir> </dev/null`. Optional: `-m grok-4.7` or `-m grok-4.7-build-fast`, `--output-format json`, `--max-turns N`. Authenticate with `grok login`; credentials are in `~/.grok/auth.json` (never read or print them).
+
+Health check: `grok -p "Reply with exactly: GROK_OK" </dev/null`. Never bypass the **Devin** wrapper: use `devin-delegate`, which provides envelope, fallback, and telemetry. `grok` is called directly by design.
 
 | Task type | Delegate | Command |
 |-----------|----------|---------|
@@ -20,23 +25,23 @@ general implement/review workhorse (browser/sandbox is one of its capabilities).
 | Browser, UI, screenshot, sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..." --workspace /path/to/repo` |
 | Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
-| Multi-file refactor on a very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
+| Second-opinion / research review from a different model family; large-codebase implementation when asked | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
 | Unknown / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
 
 ### Rules
 
-- **Never call delegates directly** (`opencode`, `devin`) — always use the wrapper scripts. Wrappers inject the envelope, fallback chain, and telemetry.
+- **Never bypass the Devin wrapper.** Use `devin-delegate` for envelope, fallback, and telemetry; never call `devin` directly. `grok` is called directly by design.
 - **Always include scope** in the task prompt: goal, constraints, acceptance checks, expected output format.
-- **Auth errors exit 126** — do not auto-retry. Print resume steps for the user.
+- **Devin auth errors exit 126** — do not auto-retry. Print resume steps for the user. For Grok auth, use `grok login`.
 
 ### Quick-start
 
 ```bash
 # Check all delegates are healthy
 devin-delegate --check
-grok-delegate --check
+grok -p "Reply with exactly: GROK_OK" </dev/null
 
-# Run setup if binaries are missing
+# Run setup if Devin/Spark binaries are missing
 bash setup.sh
 ```
 <!-- delegate-skill:end -->

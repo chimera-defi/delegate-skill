@@ -53,12 +53,16 @@ estimated_tokens_saved = max(0, parent_tokens * 3 - delegate_output_tokens)
 The K=3 multiplier reflects that a parent re-reading and reasoning over its
 context consumes roughly 3× the tokens a delegate needs for the same work.
 
-**Vendored copies — core path independence:**  Every wrapper (`devin-delegate`,
-`grok-delegate`) maintains a byte-identical copy at
+**Vendored copies — core path independence:**  The `devin-delegate` wrapper maintains a byte-identical copy at
 `scripts/tokens_saved.py`.  The core `--task` path in each wrapper must import
 from its local `scripts/tokens_saved.py` and must NOT depend on the index repo
 being installed.  The canonical home here (`shared/tokens_saved.py`) is the
 documentation/reference source; `scripts/` copies are the runtime source.
+
+As of 2026-10-27, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI
+are uninstalled from this host. Grok uses the official xAI `grok` CLI v1.0.70
+directly by design, without this wrapper telemetry contract. See
+[`SKILL.md`](../SKILL.md) for scope, invocation, health check, and login guidance.
 
 **Drift prevention:**  `shared/tests/test_tokens_saved.py` (11 pinned tests) is
 also vendored byte-identical into each wrapper's test suite.  CI in each wrapper

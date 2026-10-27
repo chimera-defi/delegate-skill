@@ -1,6 +1,6 @@
 # delegate-skill
 
-One-stop index for AI delegation skills. Install all four with a single command.
+One-stop index for AI delegation skills, with direct access to the official xAI Grok CLI.
 
 ## Install
 
@@ -10,12 +10,15 @@ cd delegate-skill
 bash setup.sh
 ```
 
+`setup.sh` still contains legacy Grok wrapper installation and routing. Its migration
+to the direct CLI is proposed separately; it is not the Grok installation path.
+
 ## Skills
 
 | Skill | Purpose | Source |
 |-------|---------|--------|
 | `devin-delegate` | Browser, UI, screenshot, sandbox implementation | [chimera-defi/devin-delegate](https://github.com/chimera-defi/devin-delegate) |
-| `grok-delegate` | Multi-file refactor, large-codebase implementation | [chimera-defi/grok-delegate](https://github.com/chimera-defi/grok-delegate) |
+| `grok` | Second-opinion / research review from a different model family; large-codebase implementation when asked | Official xAI Grok CLI v1.0.70 (called directly) |
 | `spark` / `codex-spark` | Local Codex Spark write-mode implementation | native GStack `/spark` when installed, otherwise the checked-in `codex-spark` adapter |
 
 ## Routing
@@ -29,13 +32,14 @@ Canonical routing table (with rules, fallback, auth, and latency notes) lives in
 | Browser / UI / screenshot / sandbox (a devin capability) | `devin-delegate` |
 | Local mechanical implementation / transformation / migration | Spark/Codex |
 | Cheap **small read-only** search / summarize / review | Spark/Codex bounded subagent |
-| Multi-file refactor / very large repo (DORMANT) | `grok-delegate` |
+| Second-opinion / research review from a different model family; large-codebase implementation when asked | `grok` directly |
 | Unclear scope | `devin-delegate` (workhorse) |
 
-`grok-delegate` is **dormant** — revival gate: ≥5 successful calls + a documented devin
-failure on a large repo.
+As of **2026-10-27**, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI are uninstalled from this host. Use the official xAI Grok CLI directly: `grok` **v1.0.70**. Grok is active for second-opinion / research review from a different model family and large-codebase implementation when asked.
 
-Never call delegates directly (`opencode`, `devin`). Always use the wrapper binaries — they provide envelope, fallback, and telemetry.
+Headless one-shot: `grok -p "<scoped prompt>" --cwd <dir> </dev/null`. Optional: `-m grok-4.7` or `-m grok-4.7-build-fast`, `--output-format json`, `--max-turns N`. Authenticate with `grok login`; credentials are in `~/.grok/auth.json` (never read or print them).
+
+Health check: `grok -p "Reply with exactly: GROK_OK" </dev/null`. Never bypass the **Devin** wrapper: use `devin-delegate`, which provides envelope, fallback, and telemetry. `grok` is called directly by design.
 
 ## Superpowers & GStack integration
 
@@ -51,7 +55,7 @@ Never call delegates directly (`opencode`, `devin`). Always use the wrapper bina
 
 - Implementation step needing a browser → `devin-delegate`
 - Review or research step → Spark/Codex bounded subagent; use Devin when browser/sandbox access is required
-- Implementation step on a large codebase → `grok-delegate`
+- Implementation step on a large codebase, when asked → `grok` directly
 
 Delegates keep subagent context small: only the result summary enters the parent context.
 
@@ -69,7 +73,7 @@ codex-spark --task "bounded task" --workspace /path/to/repo
 `delegate-skill` extends either Spark entrypoint with:
 
 - `devin-delegate` — real browser, shell, debugging sandbox
-- `grok-delegate` — large-codebase tasks beyond spark's context window
+- `grok` directly — second-opinion / research review from a different model family and large-codebase implementation when asked
 
 Install both to get the full execution layer.
 
