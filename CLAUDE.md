@@ -31,6 +31,7 @@ Health check: `grok -p "Reply with exactly: GROK_OK" </dev/null`. Never bypass t
 | General implementation / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..." --workspace /path/to/repo` |
 | Browser, UI, screenshot, sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..." --workspace /path/to/repo` |
 | Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
+| Fast typed **decision / classification** (route, triage, tag, yes/no, pick-one-of-N) over non-private text; ~250 ms, ~$0.02 per 1k decisions | `jev-delegate` (TypeSafe Jev System One API) | `jev-delegate --state "..." --question choice --instructions "..." --options "a=...,b=...,unclear=none fits" --min-confidence 0.85` |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Second-opinion / research review from a different model family; large-codebase implementation when asked | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
 | Unknown / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
@@ -40,6 +41,7 @@ Health check: `grok -p "Reply with exactly: GROK_OK" </dev/null`. Never bypass t
 - **Never bypass the Devin wrapper.** Use `devin-delegate` for envelope, fallback, and telemetry; never call `devin` directly. `grok` is called directly by design.
 - **Always include scope** in the task prompt: goal, constraints, acceptance checks, expected output format.
 - **Devin auth errors exit 126** — do not auto-retry. Print resume steps for the user. For Grok auth, use `grok login`.
+- **Jev is a classifier, not a reasoner.** Always offer an unclear/none option and gate with `--min-confidence`; exit 5 (below threshold) or 3 (call failed) -> escalate to a Haiku lane or the orchestrator. Never send credentials, private memory, broker/portfolio or crypto data (self-serve keys have standard retention). Usage, eval numbers and slots: crss `references/jev-delegate.md`.
 
 ### Quick-start
 

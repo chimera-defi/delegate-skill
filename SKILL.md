@@ -40,6 +40,7 @@ Kimi retired 2026-10-25; no route goes to it.
 | General implementation / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..." --workspace /path` |
 | Browser, UI, screenshot, sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..." --workspace /path` |
 | Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
+| Fast typed **decision / classification** (route, triage, tag, yes/no, pick-one-of-N) over non-private text; ~250 ms, ~$0.02 per 1k decisions | `jev-delegate` (TypeSafe Jev System One API) | `jev-delegate --state "..." --question choice --instructions "..." --options "a=...,b=...,unclear=none fits" --min-confidence 0.85` |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Second-opinion / research review from a different model family; large-codebase implementation when asked | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
 | Unknown scope / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
@@ -63,6 +64,7 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 | devin | 4 | 8 | 2 | 6 | Auth-sensitive (exit 126 = re-auth required). Browser/sandbox built in. Raw output needs human review before shipping. |
 | grok | 5 | 7 | 5 | unmeasured | Active via official xAI CLI; second-opinion / research review and large-codebase implementation when asked. |
 | spark/codex | 8 | 6 | 5 | 9 | Local, always-on. Ground-floor fallback for implementation. |
+| jev | 10 | 3 | n/a | 9 | Hosted typed-decision model; accuracy ~= Haiku on our eval (jev-1.13), 10x faster, ~60x cheaper; weak on ordinal scores and PR triage. |
 
 **Claude models** (for the `model:` parameter in Agent tool / Workflow calls — it takes the
 bare aliases below, not full ids; each alias tracks the latest release for its tier)
@@ -96,6 +98,7 @@ any recent CLI.
 - **Never bypass the Devin wrapper.** Use `devin-delegate` for envelope, fallback, and telemetry; never call `devin` directly. `grok` is called directly by design.
 - **Always scope the task.** Include: goal, constraints, acceptance checks, expected output format.
 - **Devin auth errors → exit 126.** Do not auto-retry. Print resume steps for the user (below). For Grok auth, use `grok login`.
+- **Jev is a classifier, not a reasoner.** Always offer an unclear/none option and gate with `--min-confidence`; exit 5 (below threshold) or 3 (call failed) -> escalate to a Haiku lane or the orchestrator. Never send credentials, private memory, broker/portfolio or crypto data (self-serve keys have standard retention). Usage, eval numbers and slots: crss `references/jev-delegate.md`.
 
 ## Fallback, auth, and latency
 
