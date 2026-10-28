@@ -156,9 +156,14 @@ successful calls + a documented devin failure on a large repo).
 | General implement / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..."` |
 | Browser / UI / screenshot / sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..."` |
 | Local mechanical implementation / transformation / migration | Spark/Codex | invoke `/spark` or configured Codex Spark |
+| Fast typed **decision / classification** (route, triage, tag, yes/no, pick-one-of-N) over non-private text; ~250 ms, ~$0.02 per 1k decisions | `jev-delegate` (TypeSafe Jev System One API) | `jev-delegate --state "..." --question choice --instructions "..." --options "a=...,b=...,unclear=none fits" --min-confidence 0.85` |
 | Cheap **small read-only** research / review / summarize | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Multi-file refactor / very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
 | Unknown scope | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
+
+### Rules
+
+- **Jev is a classifier, not a reasoner.** Always offer an unclear/none option and gate with `--min-confidence`; exit 5 (below threshold) or 3 (call failed) -> escalate to a Haiku lane or the orchestrator. Never send credentials, private memory, broker/portfolio or crypto data (self-serve keys have standard retention). Usage, eval numbers and slots: crss `references/jev-delegate.md`.
 
 See also: `~/.claude/skills/delegate-skill/SKILL.md` for Superpowers + GStack integration notes.
 <!-- delegate-skill:end -->
