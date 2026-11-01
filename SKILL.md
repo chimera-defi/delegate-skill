@@ -33,7 +33,7 @@ for Devin (envelope, fallback, telemetry); call `grok` directly by design.
 Spark/Codex is preferred for local mechanical implementation; `devin-delegate` is the
 general implement/review workhorse, with browser/sandbox as one of its capabilities.
 Kimi retired 2026-10-25; no route goes to it.
-`grok` is active for second-opinion / research review and large-codebase implementation when asked.
+`grok` does small mechanical work only. It never reviews (operator 2026-11-01: not trusted to review).
 
 | Task type | Delegate | Command |
 |-----------|----------|---------|
@@ -42,10 +42,10 @@ Kimi retired 2026-10-25; no route goes to it.
 | Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
 | Fast typed **decision / classification** (route, triage, tag, yes/no, pick-one-of-N) over non-private text; ~250 ms, ~$0.02 per 1k decisions | `jev-delegate` (TypeSafe Jev System One API) | `jev-delegate --state "..." --question choice --instructions "..." --options "a=...,b=...,unclear=none fits" --min-confidence 0.85` |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
-| Second-opinion / research review from a different model family; large-codebase implementation when asked | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
+| Small mechanical work (never review) | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
 | Unknown scope / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
 
-As of **2026-10-27**, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI are uninstalled from this host. Use the official xAI Grok CLI directly: `grok` **v1.0.70**. Grok is active for second-opinion / research review from a different model family and large-codebase implementation when asked.
+As of **2026-10-27**, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI are uninstalled from this host. Use the official xAI Grok CLI directly: `grok` **v1.0.70**. Grok does small mechanical work only and never reviews (operator 2026-11-01).
 
 Headless one-shot: `grok -p "<scoped prompt>" --cwd <dir> </dev/null`. Optional: `-m grok-4.7` or `-m grok-4.7-build-fast`, `--output-format json`, `--max-turns N`. Authenticate with `grok login`; credentials are in `~/.grok/auth.json` (never read or print them).
 
@@ -61,8 +61,8 @@ Higher = better. **Cost** = cheap/rate-limit-friendly (inverse of price). **Inte
 
 | delegate | cost | intelligence | taste | availability | notes |
 |----------|------|--------------|-------|--------------|-------|
-| devin | 4 | 8 | 2 | 6 | Auth-sensitive (exit 126 = re-auth required). Browser/sandbox built in. Raw output needs human review before shipping. |
-| grok | 5 | 7 | 5 | unmeasured | Active via official xAI CLI; second-opinion / research review and large-codebase implementation when asked. |
+| devin | 4 | 8 | 2 | 6 | Exit 126 = auth or untrusted workspace (read stderr; pass --workspace <git repo>). Browser/sandbox built in. Raw output needs human review before shipping. |
+| grok | 5 | 7 | 5 | unmeasured | Official xAI CLI; small mechanical work only, never a reviewer (operator 2026-11-01). |
 | spark/codex | 8 | 6 | 5 | 9 | Local, always-on. Ground-floor fallback for implementation. |
 | jev | 10 | 3 | n/a | 9 | Hosted typed-decision model; accuracy ~= Haiku on our eval (jev-1.13), 10x faster, ~60x cheaper; weak on ordinal scores and PR triage. |
 
@@ -87,7 +87,7 @@ any recent CLI.
 - **Cost is a tie-breaker only.** When axes conflict for anything that ships: intelligence > taste > cost.
 - **Bulk/mechanical work** (clear-spec implementation, data transformation, migrations): Codex `gpt-6.1-terra` at low effort in fast mode first (operator 2026-11-02, dispatchbench f77c040: equal pass rate to sol61-high, ~3x cheaper, 2.5-3x faster; escalate to `gpt-6.1-sol` high for uncovered work such as L7 hard problems) (`-c service_tier=priority`, the default for fan-outs: 37% faster, same pass rate and code; it and `gpt-6-astra` medium were the only Codex configs that never failed in the 2026-10-23 routing bench; sol61 high costs about a quarter of astra at list price but is slower). Run the task's own check or the statement's examples; only if they fail, Haiku low repairs it (`claude -p --model haiku --effort low --tools ""` with the statement, the code and the failing examples); after a failed repair, escalate to `gpt-6-astra` medium (also the pick when latency matters). Don't build with `gpt-6-luna` at any effort or sol61 medium. When Codex is quota-out (exact error text), `haiku` low builds with the same check, and `haiku` high takes a failed check or a costly miss (2026-10-24 bench: the cheapest config that never failed, 60/60 + 15/15 on the hardest rung, about a quarter of sonnet medium's $ per pass; slower tail).
 - **Anything user-facing** (UI, copy, API design) needs taste ≥ 7: use `sonnet` or `opus` directly. Never ship raw devin or `haiku` output — their taste scores (2, 4) are below the threshold. Devin is fine for implementation substrate when a human or high-taste Claude pass reviews before shipping.
-- **Reviews and adversarial critique**: `opus` or `/gstack-claude challenge`. Optionally add spark/codex or `grok` as an independent second opinion from a different model family.
+- **Reviews and adversarial critique**: `opus` or `/gstack-claude challenge`. Second family: gpt-6.1-sol only; Codex out → mark the review UNVERIFIED. Never `grok` (operator 2026-11-01).
 - **Research / summarize / small diffs**: use a bounded Spark/Codex subagent first (gpt-6.1-sol low via the host relay or `codex exec`; medium for large or ambiguous; Claude `builder` only when Codex is out); if the task needs live pages, a browser, or screenshots, use `devin-delegate`.
 - **`haiku` can ship clear-spec code, not taste work.** In a 2026-10-22 routing benchmark (tools-off Python function problems), Haiku 5.5 at medium effort passed 59/60 and every attempt on the hardest set, and Haiku low repairing Codex output that failed its check was the cheapest repair measured. That is function-level evidence only: use it for implementation and repairs with a check behind them, never for UI, copy or API design (taste), and not unreviewed on repo-scale changes.
 - **`model:` parameter accepts Claude models only.** The Agent tool's `model:` field does not route to external delegates. Use the configured Spark/Codex worker or `codex-spark --task "..."` adapter for local mechanical work and `devin-delegate --task "..."` for general or browser subtasks. Use the Devin wrapper or the configured Spark/Codex entrypoint; call `grok` directly by design.
@@ -120,7 +120,7 @@ subagents can and should use delegate skills for bounded work within larger task
 
 - Implementation step that needs a browser → `devin-delegate`
 - Review or research step → Spark/Codex bounded subagent; use Devin when browser/sandbox access is required
-- Implementation step on a large codebase, when asked → `grok` directly
+- Small mechanical step, when asked → `grok` directly
 
 Delegates keep subagent context small: only the result summary enters the parent context,
 not the full implementation.
@@ -130,7 +130,7 @@ not the full implementation.
 Current GStack no longer ships `/spark`; local Codex work goes through the canonical `codex exec` line above (or `codex-spark`). `delegate-skill` adds:
 
 - `devin-delegate` — when spark needs a real browser, shell, or debugging sandbox
-- `grok` directly — second-opinion / research review from a different model family and large-codebase implementation when asked
+- `grok` directly — small mechanical work only; never review
 
 Install both GStack and `delegate-skill` to get the full execution layer.
 
