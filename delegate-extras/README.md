@@ -1,13 +1,12 @@
 # delegate-extras
 
-"Extra" tooling for the devin and kimi delegates, moved **out** of their
+"Extra" tooling for the devin delegate, moved **out** of their
 individual delegate repos to keep each delegate small, and the shared telemetry
 aggregator used across all delegates.
 
 - `devin/` — devin-delegate extras (dashboards, audits, ci_gate, MCP server,
   parallel batch, safety sandbox, tuning, review/summarize, etc.).
-- `kimi/` — kimi-delegate extras (dashboard, audits, ci_gate, interactive mode,
-  session nudge, tuning, etc.).
+- Kimi extras were removed 2026-10-25 (git history keeps them).
 - `shared/` — cross-repo telemetry aggregator (`aggregate_telemetry.py`,
   `pricing.json`, `tests/`). USD-costed, scans all delegate repos.
 
@@ -54,12 +53,16 @@ estimated_tokens_saved = max(0, parent_tokens * 3 - delegate_output_tokens)
 The K=3 multiplier reflects that a parent re-reading and reasoning over its
 context consumes roughly 3× the tokens a delegate needs for the same work.
 
-**Vendored copies — core path independence:**  Every wrapper (`devin-delegate`,
-`kimi-delegate`, `grok-delegate`) maintains a byte-identical copy at
+**Vendored copies — core path independence:**  The `devin-delegate` wrapper maintains a byte-identical copy at
 `scripts/tokens_saved.py`.  The core `--task` path in each wrapper must import
 from its local `scripts/tokens_saved.py` and must NOT depend on the index repo
 being installed.  The canonical home here (`shared/tokens_saved.py`) is the
 documentation/reference source; `scripts/` copies are the runtime source.
+
+As of 2026-10-27, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI
+are uninstalled from this host. Grok uses the official xAI `grok` CLI v1.0.70
+directly by design, without this wrapper telemetry contract. See
+[`SKILL.md`](../SKILL.md) for scope, invocation, health check, and login guidance.
 
 **Drift prevention:**  `shared/tests/test_tokens_saved.py` (11 pinned tests) is
 also vendored byte-identical into each wrapper's test suite.  CI in each wrapper
@@ -76,9 +79,9 @@ the cutover date — this is expected and intended, not a data error.
 - `devin/ci_gate.py` reads cross-repo, USD-costed telemetry via the co-located
   `shared/aggregate_telemetry.py` (`load_events(delegate="devin-delegate")` →
   `summarize`), degrading to a zero-count summary if `shared/` is missing.
-- The dashboards (`devin/telemetry_dashboard.py`, `kimi/generate_dashboard.py`)
+- The dashboards (`devin/telemetry_dashboard.py`)
   keep their **rich per-delegate** analytics via bundled sibling telemetry
-  modules (`devin_delegate_telemetry.py`, `kimi_delegate_telemetry.py`), which
+  module (`devin_delegate_telemetry.py`), which
   expose fields the thinner shared aggregator does not (fallback reasons, error
   categories, repo-scale distribution, average latency, savings percent).
 
