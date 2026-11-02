@@ -71,12 +71,6 @@ clone_or_skip "devin-delegate" "https://github.com/chimera-defi/devin-delegate.g
 run_skill_setup "devin-delegate" "$DEVIN_DEST" "devin-delegate"
 link_skill "devin-delegate" "$DEVIN_DEST"
 
-# --- kimi-delegate ---
-KIMI_DEST="$HOME/.agents/skills/kimi-delegate"
-clone_or_skip "kimi-delegate" "https://github.com/chimera-defi/kimi-delegate-skill.git" "$KIMI_DEST" || true
-run_skill_setup "kimi-delegate" "$KIMI_DEST" "kimi-delegate"
-link_skill "kimi-delegate" "$KIMI_DEST"
-
 # --- grok-delegate ---
 GROK_DEST="$HOME/.agents/skills/grok-delegate"
 GROK_LOCAL="${WORKSPACE:-$HOME/workspace}/grok-delegate"
@@ -94,7 +88,7 @@ fi
 
 # --- spark (via gstack) ---
 SPARK_PATH="$HOME/.claude/skills/gstack/spark"
-if [ -d "$SPARK_PATH" ]; then
+if [ -f "$SPARK_PATH/SKILL.md" ]; then
   link_skill "spark" "$SPARK_PATH"
 else
   warn "native spark not found at $SPARK_PATH — installing Codex CLI adapter"
@@ -154,7 +148,7 @@ Route bounded tasks to the right AI delegate. Never call delegates directly —
 always use the wrapper binaries (envelope, fallback, telemetry).
 
 Spark/Codex = local mechanical implementation; `devin-delegate` = general implement/review
-workhorse (browser/sandbox is a sub-capability). Kimi = optional compatibility. `grok-delegate` = **dormant** (revival gate: ≥5
+workhorse (browser/sandbox is a sub-capability). Kimi retired 2026-10-25. `grok-delegate` = **dormant** (revival gate: ≥5
 successful calls + a documented devin failure on a large repo).
 
 | Task | Delegate | Quick command |
@@ -162,9 +156,14 @@ successful calls + a documented devin failure on a large repo).
 | General implement / review / debug (workhorse) | `devin-delegate` | `devin-delegate --task "..."` |
 | Browser / UI / screenshot / sandbox (a devin capability) | `devin-delegate` | `devin-delegate --task "..."` |
 | Local mechanical implementation / transformation / migration | Spark/Codex | invoke `/spark` or configured Codex Spark |
+| Fast typed **decision / classification** (route, triage, tag, yes/no, pick-one-of-N) over non-private text; ~250 ms, ~$0.02 per 1k decisions | `jev-delegate` (TypeSafe Jev System One API) | `jev-delegate --state "..." --question choice --instructions "..." --options "a=...,b=...,unclear=none fits" --min-confidence 0.85` |
 | Cheap **small read-only** research / review / summarize | Spark/Codex bounded subagent | scoped read-only subagent call |
 | Multi-file refactor / very large codebase (DORMANT) | `grok-delegate` | `grok-delegate --task "..."` |
 | Unknown scope | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
+
+### Rules
+
+- **Jev is a classifier, not a reasoner.** Always offer an unclear/none option and gate with `--min-confidence`; exit 5 (below threshold) or 3 (call failed) -> escalate to a Haiku lane or the orchestrator. Never send credentials, private memory, broker/portfolio or crypto data (self-serve keys have standard retention). Usage, eval numbers and slots: crss `references/jev-delegate.md`.
 
 See also: `~/.claude/skills/delegate-skill/SKILL.md` for Superpowers + GStack integration notes.
 <!-- delegate-skill:end -->
@@ -189,7 +188,6 @@ check_cmd() {
 check_cmd "devin-delegate" "devin-delegate"
 check_cmd "codex" "codex"
 check_cmd "codex-spark adapter" "codex-spark"
-check_cmd "kimi-delegate" "kimi-delegate" # optional compatibility route
 check_cmd "grok-delegate" "grok-delegate"
 
 echo ""
