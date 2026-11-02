@@ -46,7 +46,7 @@ STALE_ROUTING
 # sub-skill setup.sh runs (keeps the test network-free).
 BIN="$SCRATCH/bin"
 mkdir -p "$BIN"
-for d in devin-delegate kimi-delegate grok-delegate codex; do
+for d in devin-delegate grok-delegate codex; do
   printf '#!/usr/bin/env bash\necho "%s stub ok"\n' "$d" > "$BIN/$d"
   chmod +x "$BIN/$d"
 done
@@ -56,7 +56,7 @@ export PATH="$HOME/.local/bin:$PATH"
 # Pre-stub clone destinations as symlinks to a real dir so clone_or_skip() skips
 # `git clone` (its `[ -L ] && [ -d ]` branch returns "already installed").
 mkdir -p "$SCRATCH/stubskill" "$HOME/.agents/skills"
-for d in devin-delegate kimi-delegate grok-delegate; do
+for d in devin-delegate grok-delegate; do
   ln -sfn "$SCRATCH/stubskill" "$HOME/.agents/skills/$d"
 done
 
@@ -77,11 +77,9 @@ check "stale routing block replaced"            grep -q "Spark/Codex" "$HOME/.cl
 check "global skill symlink registered"         test -L "$HOME/.claude/skills/delegate-skill"
 check "Codex skill symlink registered"          test -L "$HOME/.agents/skills/delegate-skill"
 check "Spark/Codex route present"               grep -q "Spark/Codex" "$HOME/.claude/CLAUDE.md"
-check "Kimi is not the default route"           bash -c '! grep -q "Cheap.*kimi-delegate" "$1"' _ "$HOME/.claude/CLAUDE.md"
 check "devin binary resolved"                   grep -q "devin-delegate binary:" "$SCRATCH/run2.log"
 check "codex binary resolved"                   grep -q "codex binary:" "$SCRATCH/run2.log"
 check "Codex Spark adapter resolved"            grep -q "codex-spark adapter binary:" "$SCRATCH/run2.log"
-check "kimi --check binary resolved"            grep -q "kimi-delegate binary:" "$SCRATCH/run2.log"
 check "grok --check binary resolved"            grep -q "grok-delegate binary:" "$SCRATCH/run2.log"
 check "adapter check reports availability"      env HOME="$HOME" PATH="$BIN:$PATH" "$REPO_ROOT/scripts/codex-spark" --check
 

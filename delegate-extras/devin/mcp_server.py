@@ -100,17 +100,17 @@ class DevinDelegateMCPServer:
                             },
                             "fallback_engine": {
                                 "type": "string",
-                                "enum": ["codex", "kimi", "anthropic", "pi"],
+                                "enum": ["codex", "anthropic", "pi"],
                                 "description": "Override fallback engine"
                             },
                             "fallback_provider": {
                                 "type": "string",
-                                "enum": ["codex", "kimi", "anthropic", "pi"],
+                                "enum": ["codex", "anthropic", "pi"],
                                 "description": "Deprecated alias for fallback_engine"
                             },
                             "fallback_pi_provider": {
                                 "type": "string",
-                                "description": "Provider to pass to pi fallback (e.g., kimi-coding, openai)"
+                                "description": "Provider to pass to pi fallback (e.g., openai)"
                             },
                             "timeout_override": {
                                 "type": "integer",
