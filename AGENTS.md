@@ -13,7 +13,7 @@
 Spark/Codex is preferred for local mechanical implementation. `devin-delegate` is the
 general implement/review workhorse (browser/sandbox is one of its capabilities). Kimi is retired (2026-10-25).
 
-As of **2026-10-27**, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI are uninstalled from this host. Use the official xAI Grok CLI directly: `grok` **v1.0.70**. Grok is active for second-opinion / research review from a different model family and large-codebase implementation when asked.
+As of **2026-10-27**, the OpenCode-based `grok-delegate` wrapper and `opencode` CLI are uninstalled from this host. Use the official xAI Grok CLI directly: `grok` **v1.0.70**. Grok does small mechanical work only and never reviews (operator 2026-11-01: not trusted to review).
 
 Headless one-shot: `grok -p "<scoped prompt>" --cwd <dir> </dev/null`. Optional: `-m grok-4.7` or `-m grok-4.7-build-fast`, `--output-format json`, `--max-turns N`. Authenticate with `grok login`; credentials are in `~/.grok/auth.json` (never read or print them).
 
@@ -26,7 +26,7 @@ Health check: `grok -p "Reply with exactly: GROK_OK" </dev/null`. Never bypass t
 | Local mechanical implementation / transformation / migration | `spark` / Codex Spark | `codex exec -m gpt-6.1-sol -c model_reasoning_effort=high -c service_tier=priority ... </dev/null` (or `codex-spark --task`) |
 | Fast typed **decision / classification** (route, triage, tag, yes/no, pick-one-of-N) over non-private text; ~250 ms, ~$0.02 per 1k decisions | `jev-delegate` (TypeSafe Jev System One API) | `jev-delegate --state "..." --question choice --instructions "..." --options "a=...,b=...,unclear=none fits" --min-confidence 0.85` |
 | Cheap **small read-only** search / summarize / draft / review | Spark/Codex bounded subagent | scoped read-only subagent call |
-| Second-opinion / research review from a different model family; large-codebase implementation when asked | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
+| Small mechanical work (never review) | `grok` | `grok -p "<scoped prompt>" --cwd <dir> </dev/null` |
 | Unknown / orchestration | `devin-delegate` (workhorse) | `devin-delegate --task "scope: ..."` |
 
 ### Rules
