@@ -23,7 +23,7 @@ Ladders, quota fallbacks and review slots live in `~/.claude/CLAUDE.md` ("Cheape
 | Task | Lane | Command |
 |---|---|---|
 | Build / mechanical edit with a check | Codex `gpt-6.1-terra` low (sol61 high for hard uncovered work) | `codex exec -m gpt-6.1-terra -c model_reasoning_effort=low -c service_tier=priority --cd <dir> --sandbox workspace-write "<task>" </dev/null` |
-| Codex quota-out | Haiku low builds (Haiku high after a failed check) | Agent tool, `model: haiku` |
+| Codex blocked or out | Grok or Devin first (rows below), then Haiku low (Haiku high after a failed check) | Agent tool, `model: haiku` |
 | Unknown scope, browser/UI, sandbox | Devin | `devin-delegate --task "..." --workspace <trusted git repo>` |
 | Small mechanical work, never review | Grok | `grok -p "<task>" --cwd <dir> --always-approve --no-subagents </dev/null` |
 | Review | gpt-6.1-sol or Claude; never Grok | see staffing.md |
