@@ -31,7 +31,7 @@ Ladders, quota fallbacks and review slots live in `~/.claude/CLAUDE.md` ("Cheape
 
 Judge output, not price: a weak result is redone on a stronger lane without asking. Anything user-facing (UI, copy, API design) needs Sonnet or Opus taste, never raw Devin or Haiku.
 
-## Gemini via agy (operator 2026-11-25; Google AI Pro, $30.50 CA first month, $26.99 renewal)
+## Gemini via agy (operator 2026-11-25; Google AI Pro, plan CA$26.99/mo, $30.50 charged 2026-11-25 with tax, Play Canada)
 Numbers (pass rate, sec/call, quota points per 12 calls): the Gemini tables on the DispatchBench report, https://chimericlabs.xyz/dispatchbench/. Rough (small n). Use a model only where its row passes the check you need; unlisted models are not cleared.
 - Call: `cd <scratch dir> && agy -p "<task>" --model gemini-4-neon-medium --output-format json </dev/null` (bulk reads: `--model gemini-3.8-flash-low`). Reply is in `.response`; ids: `agy models`. The level is in the id (the bench also passes `--effort`; a call without it worked 11-25). Never xhigh, never `/swarm`.
 - Before a batch: `agy -p "/usage" --model gemini-3.8-flash-low --output-format json </dev/null` (free, no model call): Gemini weekly and 5-hour % remaining. Read again after.
